@@ -1,0 +1,29 @@
+FROM ubuntu
+
+# Actualizar el sistema y luego instalar el servidor SSH y otros paquetes
+RUN apt-get update && apt-get install -y openssh-server && \
+    apt-get install -y python3-pip && \
+    pip3 install --upgrade pip && \
+    pip3 install awscli
+
+# Crear un usuario y configurar SSH el usuario tiene una contraseña en texto plano esto va al gusto
+RUN useradd remote_user && \
+    echo "remote_user:1234" | chpasswd && \ 
+    mkdir -p /home/remote_user/.ssh && \
+    chmod 700 /home/remote_user/.ssh
+
+# Copiar la clave pública SSH al directorio del usuario
+COPY remote-key.pub /home/remote_user/.ssh/authorized_keys
+
+# Establecer permisos para la clave SSH
+RUN chown remote_user:remote_user -R /home/remote_user && \
+    chmod 600 /home/remote_user/.ssh/authorized_keys
+
+# Generar claves SSH
+RUN ssh-keygen -A
+
+RUN mkdir /run/sshd
+
+
+# Iniciar el servidor SSH en primer plano
+CMD ["/usr/sbin/sshd", "-D"]

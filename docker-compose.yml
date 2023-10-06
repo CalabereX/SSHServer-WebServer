@@ -1,0 +1,20 @@
+version: '3'
+services:
+  remote_host:
+    container_name: remote-host
+    image: remote-host
+    build:
+      context: ubuntu
+    networks:
+      - net
+  web:
+    container_name: web
+    image: web
+    build:
+      context: ./web
+    ports:
+      - "80:80"
+    networks:
+      - net
+networks:
+  net:
